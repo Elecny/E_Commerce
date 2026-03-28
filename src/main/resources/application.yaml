@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: e-commerce
+jwt:
+  secret: your-secret-key-here-must-be-at-least-32-characters-long
+  expiration: 86400000  # 24小时 (毫秒)
+  refresh-expiration: 604800000  # 7天
