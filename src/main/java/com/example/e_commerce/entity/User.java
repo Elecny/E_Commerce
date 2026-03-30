@@ -1,12 +1,13 @@
 package com.example.e_commerce.entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "user")
-public class User {
+public class User implements Serializable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,6 +1,5 @@
 package com.example.e_commerce.service.ProductService;
 
-
 import com.example.e_commerce.entity.Product;
 import com.example.e_commerce.exception.BusinessException;
 import com.example.e_commerce.exception.ResourceNotFoundException;
@@ -8,6 +7,9 @@ import com.example.e_commerce.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -287,7 +289,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getTopSalesProducts(Integer limit) {
         if (limit == null) limit = 10;
-        // 直接传int，不用Pageable
         return productRepository.findTopSalesProducts(STATUS_ON_SALE, limit);
     }
 

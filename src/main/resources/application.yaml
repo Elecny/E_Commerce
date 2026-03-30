@@ -1,3 +1,42 @@
 spring:
-  application:
-    name: e-commerce
+  datasource:
+    # 基础连接信息
+    url: jdbc:mysql://localhost:3306/e_commerce?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource # 显式指定（可选，默认已为 Hikari）
+    # HikariCP 专属配置
+    hikari:
+      pool-name: MyAppHikariPool # 连接池名（便于监控）
+      # 连接池大小（生产建议 minimum-idle = maximum-pool-size，固定大小）
+      maximum-pool-size: 20 # 最大连接数（CPU核心数×2+1，不超DB最大连接数80%）
+      minimum-idle: 20 # 最小空闲连接
+      # 超时配置（毫秒）
+      connection-timeout: 30000 # 获取连接超时（30秒）
+      idle-timeout: 600000 # 空闲连接回收（10分钟）
+      max-lifetime: 1800000 # 连接最大生命周期（30分钟，<DB wait_timeout）
+      leak-detection-threshold: 60000 # 连接泄漏检测（60秒）
+      keepalive-time: 30000 # TCP保活（防止防火墙断连）
+      auto-commit: true # 自动提交（事务场景建议false）
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+      database: 0
+      timeout: 10000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 10000
+  
+  cache:
+    type: redis  # Explicitly set Redis as cache provider
+    redis:
+      time-to-live: 600000  # 10 minutes default TTL
+      cache-null-values: false
+      key-prefix: "myapp:"
+      use-key-prefix: true

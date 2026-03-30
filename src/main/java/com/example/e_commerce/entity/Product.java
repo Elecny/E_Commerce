@@ -6,6 +6,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
            @Index(name = "idx_create_time", columnList = "create_time")
        })
 @EntityListeners(AuditingEntityListener.class)
-public class Product {
+public class Product implements Serializable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

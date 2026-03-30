@@ -1,7 +1,10 @@
 package com.example.e_commerce.service.ProductService;
 
-
 import com.example.e_commerce.entity.Product;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,202 +16,172 @@ public interface ProductService {
     
     // ========== 基础CRUD操作 ==========
     
-    /**
-     * 创建商品
-     */
+    @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                allEntries = true)
     Product createProduct(Product product);
     
-    /**
-     * 更新商品
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#product.id"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                   allEntries = true)
+    })
+    @CachePut(value = "productDetail", key = "#result.id")
     Product updateProduct(Product product);
     
-    /**
-     * 根据ID查询商品
-     */
+    @Cacheable(value = "productDetail", key = "#id", unless = "#result == null")
     Product getProductById(Long id);
     
-    /**
-     * 根据ID查询上架的商品（前台使用）
-     */
+    @Cacheable(value = "productDetail", key = "'onsale_' + #id", unless = "#result == null")
     Product getOnSaleProductById(Long id);
     
-    /**
-     * 删除商品（物理删除）
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#id"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                   allEntries = true)
+    })
     void deleteProduct(Long id);
     
-    /**
-     * 逻辑删除商品
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#id"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                   allEntries = true)
+    })
     void logicDeleteProduct(Long id);
     
-    /**
-     * 批量逻辑删除商品
-     */
+    @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                allEntries = true)
     void batchLogicDeleteProducts(List<Long> ids);
     
     // ========== 查询操作 ==========
     
-    /**
-     * 查询所有商品（分页）
-     */
+    @Cacheable(value = "productList", key = "#pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> getAllProducts(Pageable pageable);
     
-    /**
-     * 查询上架商品（分页）
-     */
+    @Cacheable(value = "productList", key = "'onsale_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> getOnSaleProducts(Pageable pageable);
     
-    /**
-     * 根据分类查询商品
-     */
+    @Cacheable(value = "categoryProducts", key = "#categoryId + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> getProductsByCategory(Long categoryId, Pageable pageable);
     
-    /**
-     * 根据分类查询上架商品
-     */
+    @Cacheable(value = "categoryProducts", key = "'onsale_' + #categoryId + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> getOnSaleProductsByCategory(Long categoryId, Pageable pageable);
     
-    /**
-     * 搜索商品（根据名称）
-     */
+    @Cacheable(value = "searchResults", key = "#keyword + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> searchProducts(String keyword, Pageable pageable);
     
-    /**
-     * 搜索上架商品（根据名称）
-     */
+    @Cacheable(value = "searchResults", key = "'onsale_' + #keyword + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> searchOnSaleProducts(String keyword, Pageable pageable);
     
-    /**
-     * 多条件查询商品
-     */
+    @Cacheable(value = "searchResults", key = "#name + '_' + #categoryId + '_' + #status + '_' + #minPrice + '_' + #maxPrice + '_' + #minStock + '_' + #maxStock + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> searchProductsByConditions(String name, Long categoryId, String status,
                                             BigDecimal minPrice, BigDecimal maxPrice,
                                             Integer minStock, Integer maxStock, Pageable pageable);
     
-    /**
-     * 根据价格区间查询商品
-     */
+    @Cacheable(value = "searchResults", key = "#minPrice + '_' + #maxPrice + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", 
+               unless = "#result == null || #result.isEmpty()")
     Page<Product> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
     
     // ========== 库存管理 ==========
     
-    /**
-     * 减少库存
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#productId"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts"}, 
+                   allEntries = true)
+    })
     void decreaseStock(Long productId, Integer quantity);
     
-    /**
-     * 增加库存
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#productId"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts"}, 
+                   allEntries = true)
+    })
     void increaseStock(Long productId, Integer quantity);
     
-    /**
-     * 检查库存是否充足
-     */
     boolean checkStock(Long productId, Integer quantity);
     
-    /**
-     * 获取库存不足的商品列表
-     */
+    @Cacheable(value = "productList", key = "'lowStock_' + #threshold", unless = "#result == null || #result.isEmpty()")
     List<Product> getLowStockProducts(Integer threshold);
     
-    /**
-     * 批量更新库存
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#stockUpdates.keySet()"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts"}, 
+                   allEntries = true)
+    })
     void batchUpdateStock(Map<Long, Integer> stockUpdates);
     
     // ========== 销量和浏览管理 ==========
     
-    /**
-     * 增加销量
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#productId"),
+        @CacheEvict(value = {"hotProducts", "productStats"}, allEntries = true)
+    })
     void increaseSalesCount(Long productId, Integer quantity);
     
-    /**
-     * 增加浏览量
-     */
+    @CacheEvict(value = "productDetail", key = "#productId")
     void increaseViewCount(Long productId);
     
-    /**
-     * 获取销量排行榜
-     */
+    @Cacheable(value = "hotProducts", key = "'topSales_' + #limit", unless = "#result == null || #result.isEmpty()")
     List<Product> getTopSalesProducts(Integer limit);
     
-    /**
-     * 获取浏览排行榜
-     */
+    @Cacheable(value = "hotProducts", key = "'topView_' + #limit", unless = "#result == null || #result.isEmpty()")
     List<Product> getTopViewProducts(Integer limit);
     
     // ========== 商品状态管理 ==========
     
-    /**
-     * 上架商品
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#productId"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                   allEntries = true)
+    })
     void putOnSale(Long productId);
     
-    /**
-     * 下架商品
-     */
+    @Caching(evict = {
+        @CacheEvict(value = "productDetail", key = "#productId"),
+        @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                   allEntries = true)
+    })
     void putOffSale(Long productId);
     
-    /**
-     * 批量上架商品
-     */
+    @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                allEntries = true)
     void batchPutOnSale(List<Long> productIds);
     
-    /**
-     * 批量下架商品
-     */
+    @CacheEvict(value = {"productList", "categoryProducts", "searchResults", "hotProducts", "productStats"}, 
+                allEntries = true)
     void batchPutOffSale(List<Long> productIds);
     
     // ========== 统计查询 ==========
     
-    /**
-     * 获取商品总数
-     */
+    @Cacheable(value = "productStats", key = "'totalCount'")
     long getTotalProductCount();
     
-    /**
-     * 获取上架商品数量
-     */
+    @Cacheable(value = "productStats", key = "'onSaleCount'")
     long getOnSaleProductCount();
     
-    /**
-     * 获取分类下的商品数量
-     */
+    @Cacheable(value = "productStats", key = "'categoryCount_' + #categoryId")
     long getProductCountByCategory(Long categoryId);
     
-    /**
-     * 获取库存为0的商品数量
-     */
+    @Cacheable(value = "productStats", key = "'outOfStockCount'")
     long getOutOfStockCount();
     
-    /**
-     * 获取价格统计信息
-     */
+    @Cacheable(value = "productStats", key = "'priceStatistics'")
     Map<String, Object> getPriceStatistics();
     
-    /**
-     * 获取各分类商品数量统计
-     */
+    @Cacheable(value = "productStats", key = "'categoryProductCount'")
     Map<Long, Long> getProductCountByCategory();
     
     // ========== 验证和检查 ==========
     
-    /**
-     * 验证商品是否存在
-     */
     void validateProductExists(Long productId);
     
-    /**
-     * 验证商品是否可购买（存在且上架且有库存）
-     */
     void validateProductPurchasable(Long productId, Integer quantity);
     
-    /**
-     * 检查商品名称是否重复
-     */
     boolean isProductNameDuplicate(String name, Long excludeId);
 }
