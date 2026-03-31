@@ -1,8 +1,10 @@
 package com.example.e_commerce.service.ProductService;
 
 import com.example.e_commerce.entity.Product;
+import com.example.e_commerce.entity.elasticsearch.ProductDocument;
 import com.example.e_commerce.exception.BusinessException;
 import com.example.e_commerce.exception.ResourceNotFoundException;
+import com.example.e_commerce.repository.ProductDocumentRepository;
 import com.example.e_commerce.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,9 @@ public class ProductServiceImpl implements ProductService {
     
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ProductDocumentRepository productDocumentRepository;
     
     // ========== 基础CRUD操作 ==========
     

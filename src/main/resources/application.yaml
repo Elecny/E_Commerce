@@ -40,3 +40,9 @@ spring:
       cache-null-values: false
       key-prefix: "myapp:"
       use-key-prefix: true
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic  # 如果需要认证
+    password: password
+    connection-timeout: 10s
+    socket-timeout: 30s
